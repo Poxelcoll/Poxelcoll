@@ -13,7 +13,7 @@ and is available in Scala 2.9 and C++11.
 CONTACT
 
 Email: poxelcoll@gmail.com (is checked infrequently)
-Github page: 
+Github page: https://github.com/Poxelcoll/Poxelcoll
 
 
 
