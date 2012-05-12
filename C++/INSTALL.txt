@@ -1,0 +1,7 @@
+Build the project with CMake, using the commands "cmake ." and then "make".
+The project is hard-wired to use g++, but it shouldn't be difficult to change.
+
+Uses C++11 and CMake 2.8.5.
+
+Uses doxygen 1.7.4 for documentation.
+

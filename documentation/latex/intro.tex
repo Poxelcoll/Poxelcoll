@@ -1,0 +1,289 @@
+
+\section{Intro}
+
+Poxelcoll (\textbf{Po}lygon/pi\textbf{xel}-perfect \textbf{coll}ision detection library)
+is a FOSS library designed to support easy, flexible and efficient pixel-perfect collision detection,
+including simple transformations such as scaling and rotation.
+
+\subsection{Overview}
+
+This introduction starts with a background that describes the main motivation behind
+the library, as well as the main idea of the library. It continues with
+simple instructions for basic usage of the library, some general information
+and issues regarding collision detection and this library, a part about
+geometric and numerical stability, a discussion
+of when this library may be useful or not (including potential substitutes).
+It ends with a brief discussion of portability, license, status and future
+of the library.
+
+\subsection{Background}
+
+2D game development frequently features some sort of physical world where
+things can collide. The complexity of modelling and the used solutions
+varies greatly, from simple grid-based models, to complex models
+with accurate simulation of gravity, friction, momentum, etc.
+The part of the modelling that deals with detecting collisions is commonly called
+collision detection.
+A major challenge for implementing solutions to the more complex models
+is \emph{ease of use}, \emph{flexibility} as well as \emph{efficiency}.
+The major factor that determines these issues is the basic representations
+of collision objects, also known as primitives.
+Simpler primitives tend to be more efficient
+and easier and not very flexible, while more complex primitives are
+much more flexible, but generally not very efficient, easy to use or implement.
+
+For ease of use and efficiency, simple solutions include using
+axis-aligned bounding boxes or perfect circles. While these solutions
+are very simple, they are not flexible at all, and may limit the gameplay
+of the games that use them, solely due to technical limitations.
+
+Another solution which is much more flexible is that of pixel-perfect collision detection.
+Pixel-perfect collision detection uses images as a spatial representation of the
+collision object. This is conceptually easy, especially if the image used for
+the primitive is the same as that which is used for drawing: if a sprite is
+seen to collide on screen, it also collides in the game.
+Since most 2D games, libraries, tools and engines has some
+support for images and sprites, handling images is generally not an issue.
+If basic transformations such as scaling and rotation is supported dynamically,
+it is also very flexible. Examples of games that uses pixel-perfect collision
+detection include the 2D games of the Worm series.
+
+The main issue with pixel-perfect collision detection is that it is difficult to
+implement efficiently, especially if basic transformations is supported dynamically.
+Simple implementations, without any transformation, goes through each pixel of one
+image and checks if it is filled at the same time as the corresponding pixel
+in the other image is filled. Even if optimised, this is generally very inefficient.
+The problem becomes worse when the images needs to be transformed,
+because every time the transformation changes for a given collision object,
+the whole image, along with every pixel in it, needs to be changed.
+If pixel-perfect collision detection is used or needed for the gameplay,
+it can limit the game to small and few collision objects.
+
+A third, general solution is to use complicated or multiple geometric primitives
+to represent the collision objects. For instance, convex or concave polygons,
+using multiple triangles, boxes, circles, lines, etc. can be used here.
+When the desired collision shapes fits well with the geometric primitives,
+it can be very efficient.
+There are many options, and it can be somewhat flexible, especially if many
+primitives is used for each collision object. Transformation is also somewhat
+efficient, since geometric primitives are described by relatively few points.
+
+However, it is not always easy to use. If the desired collision shape does not
+fit well with geometric primitives, approximating it may take time
+and energy, may not be efficient (due to the number of primitives used),
+and may not be as precise as desired.
+
+The \textbf{main idea of this library} is to combine the pixel-perfect collision detection
+with a general geometric primitive, namely the convex polygon.
+The convex hull of the collision object's image is precomputed and stored.
+Whenever the collision object must detect collisions with another collision object,
+the convex hull is transformed with the basic transformations (rotation, scaling).
+Since the convex hull consists of comparatively few points, this will generally
+be efficient. The same is done for the other collision object.
+With the two transformed convex hulls, a precise intersection between them is found.
+This intersection is the only part which needs to be checked for collisions using
+the backing images, since the images will definitely not overlap outside
+the intersection.
+Another advantage is that this enables easy and efficient collision detection
+between pixel-perfect collision objects and geometric collision objects.
+
+\subsection{Getting started}
+
+First, pick between the Scala and C++ implementation.
+The Scala implementation is (of version 0.1) faster and
+has slightly more features, and should be preferred when the JVM
+platform is used. The C++ implementation is preferrable when
+the platform is not JVM, simply because Scala (as of this writing)
+essentially requires the JVM.
+
+Next, read the installation for the given implementation
+in the document "INSTALL".
+
+Once the library has been setup and is ready to use,
+look at the API documentation for the BinaryImage,
+Mask and CollisionInfo classes, in that order.
+These are some of the main data types when using the library.
+The BinaryImage represents an image, where each pixel
+is either on or off. The images that is to be used for
+collision detection should be loaded into BinaryImage's.
+The mask represent a collision primitive.
+It consists of an optional BinaryImage, an origin
+around which transformations happen,
+a bounding box which covers the whole image,
+as well as a convex hull.
+For ease of use, factory methods are provided
+that automatically generates both the bounding
+box and the convex hull given a binary image
+and origin point.
+The final class is CollisionInfo, which
+holds a Mask, some collision information
+such as rotation angle and scaling along
+x-axis and y-axis, and an id.
+While the Mask is meant to be permanent and precomputed,
+the CollisionInfo is more temporary.
+The id indicates which object the collision object
+belongs to.
+
+If images are not always used, the ConvexCCWPolygon must be
+understood and used when creating the mask.
+Be careful about obeying its contract! Without obeying
+its contract, the library gives no guarantees in regards
+to correctness or efficiency.
+
+Those classes are the main things you have to worry about.
+Once you have those set up, simply use the Pairwise
+class to detect collisions. However, it is recommended
+that you read or at least skim through the rest of the
+manual to understand what is going on, and to know
+about the issues in the library.
+
+\subsection{When this library is appropriate}
+
+This library is not suitable for 3D collision detection,
+nor is it suitable for platforms where Scala or C++ is not
+supported or appropriate.
+
+Furthermore, its license is GPLv3, which may cause problems for some potential users
+of this library.
+
+If the issues regarding numerical stability matters, this library is not appropriate at all.
+Look into libraries like CGAL.
+
+If pixel-perfect collision detection is not used or needed, there may exist libraries
+out there which are more suited to the given context. However, if convex hulls
+represented by convex polygons are efficient, flexible and easy enough for the required
+purposes, this library may suit the purposes.
+
+If a fully-fledged physics engine is required, this library alone is not enough.
+The library has not been built to support or to be incorporated into a physics engine,
+and while it may or may not be possible with few modifications, it has not been investigated.
+However, if a physics engine with pixel-perfect collision detection is desired or needed,
+incorporating this library into an existing physics engine may be the best solution.
+For physics engines, box2d is a 2D physics engine written in C++ with a permissive license.
+
+For contexts where the images change, for instance for games where destructable terrain
+is featured, the efficiency of this library may or may not be sufficient. The library
+requires precomputation of the images for finding the convex hull. This presents two
+issues. The first is that the repeated recomputation of the convex hull may be too inefficient.
+This depends partly on how frequently images change in the worst case.
+The second issue is that images that fitted the convex hull well before the change
+does not fit the convex hull well after the change. The effect on performance can be considerable.
+Prototyping the library and seeing if its performance is acceptable may be the best option,
+but it is in any case recommended that the different aspects that affect performance of the library
+is understood clearly before taking any decisions.
+
+For pixel-perfect collision detection systems where basic transformations like rotation and scaling
+is not required, it depends on the context whether this library should be used, but for most
+contexts this library should perform efficiently. Even if the basic transformations are not used,
+this library may be several orders of magnitude more efficient than the naive alternatives
+in the best case, and only a low constant-factor slower in the worst case.
+See the section regarding efficiency for more information.
+
+Overall, if you need pixel-perfect collision detection, this library (either pure, modified or
+combined with another existing library) should be suitable for your purposes.
+
+\subsection{Portability}
+
+NOTE: This pertains to version 0.1.
+
+The portability depends on the implementation used.
+
+For the Scala implementation, there is no dependencies on other libraries,
+and the implementation can thus be used on any platform that supports Scala.
+The language version used is 2.9.2.
+The only external dependencies that may be introduced is that of Swing,
+and then only for parts unrelated to the library itself, such as
+testing, performance profiling and demonstration.
+sbt is used for compiling and generating documentation.
+
+For the C++ implementation, C++11 is used extensively in the implementation.
+Therefore, only platforms with compilers that support C++11 can be used.
+There are also a few dependencies on Boost, notably dynamic\_bitset
+and array.
+The make system also happens to be hard-wired to use g++ with compiler
+flags for using C++11. Changing the make system for someone experienced
+with system administration should in theory be easy, and help would be
+appreciated. CMake is used to generate makefiles, and doxygen is used for
+generating documentation.
+
+\subsection{License}
+
+The entire library is licensed under GPL v3. For more details, see the document
+"LICENSING".
+
+The main reason is that it encourages users to share and improve the library.
+By ensuring that everyone who uses the library keeps it open source,
+everyone can modify and change it, and improvements from all users can be
+redirected to the library, improving the library for all.
+Furthermore, it means that the real-world usage of the library can be investigated,
+and the library can then be changed and improving based on actual usage and needs.
+It also guarantees the freedom of users to use the library as they want to.
+
+Another reason is that a fair amount of work was put into this library,
+and it is released in the hope of contributing to the game development
+community as well as the FOSS community. Without a proper license,
+proprietary users could use this library gratis and without any effort,
+thus not contributing anything back.
+
+If you want to use this library in a project, ensure that it is compatible
+with the GPL v3.
+
+\subsection{Status and future of the library}
+
+As of version 0.1, 2012-05-08, the \textbf{status} is that the library is somewhat stable and well-documented.
+It does not have many features, but does have the most important ones
+(efficient pixel-perfect collision detection, efficient basic transformations).
+The library has never been used in the real-world, and there are no regression
+tests.
+
+The Scala version is more mature than the C++ version.
+The reason is that the C++ version is basically a nearly-direct translation
+of the Scala source, which means that it is not idiomatic C++, and that
+it seems to be a lot slower than the Scala version in basic performance tests.
+
+For the \textbf{future}, three areas can be improved upon.
+In the following, they will be described in decreasing priority,
+starting with the highest priority.
+
+The first area is stability, correctness and testing of the library.
+The reason this is the highest priority is that making the library
+correct is non-trivial, and if the library is not correct and robust,
+it is not very useful. Issues like geometric stability
+and numerical stability makes this area harder to maintain and improve.
+More regression tests, demonstrations and performance tests will
+make the library more reliable. Real-world usage may also uncover
+other issues. In regards to known issues, the best improvement would
+be ensuring numerical stability, or at least determine what effects
+numerical instability has on the current implementations.
+
+The second area is more features. One possible option is support for
+broad phases. This is not a big necessity, since other libraries
+already provides this functionality, and pixel-perfect collision
+detection does not have different requirements than other collision
+detection systems in regards to the broad phase.
+Another option is support for only colliding with pixel of a
+certain transparency, getting the collision point, etc.
+These are smaller features that would take some work,
+and if someone needs them, it should be entirely possible
+to fork/modify the library to handle them.
+Another area is improved precomputation. While the pixel-perfect
+collision is generally efficient for images that are accurately approximated
+by their convex hull, they are not necessarily efficient for images
+that are not approximated well by their conevx hull.
+One possible option to handle this is to split the image into smaller
+parts, and find the convex hull of these smaller parts.
+If the number of parts is small, and these parts are generally
+well approximated by their convex hull, this may increase the
+efficiency. Providing a general algorithm that automatically
+determines if and how to split an image might improve the
+efficiency and the ease of use of the library.
+Other features would include changing and expanding the
+API such that it fits better with real-world usage.
+
+The third area is efficiency, both asymptotic and constant-factor. While the library should be
+reasonably efficient, there are room for improvements in many
+places. However, flexibility, maintenance, robustness and correctness is more
+important, and this area can always be improved upon incrementally
+as performance profiling indicates which parts it is worth
+making more performant.
+

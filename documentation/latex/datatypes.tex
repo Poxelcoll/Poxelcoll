@@ -1,0 +1,192 @@
+
+\subsection{General data types}
+
+The library provides a number of general data types.
+By "data type" is meant basic data containers that
+represent different concepts and support different
+operations. For instance, a mathematical vector contains a couple
+of coordinates, and supports operations like cross-product
+and dot-product. Having a precise understanding of the data types
+in the library makes it easier to use the libray.
+
+A general note about the data types in the library is that they
+are, in general, immutable. This makes it generally easier
+to reason about the library and ensure that it is robust
+and correct.
+
+The most important of the data structures in regards to using
+the library is the BinaryImage, Mask and CollisionInfo.
+If polygons are used as primitives, it will be necessary to use
+ConvexCCWPolygon as well.
+
+\textbf{BinaryImage} represents an image. By an 'image' is meant
+a 2-dimensional finite area of values, that have a width and a height.
+A 'binary image' is an image that holds binary values, meaning that
+each value in the image is either 'on' or 'off', or alternatively,
+1 or 0. In the library, binary images are used as the primitive for
+pixel-perfect collision detection. 'on' or 1 represents that there
+is something, while 'off' or 0 represents that there is nothing.
+When the binary images of two collision objects overlap,
+and there is at least one point in the overlap where both of the
+binary images is 'on' or 1, there is a collision. If not, there
+is no collision.
+
+The way to construct a pixel-perfect binary image from an image
+depends on the image, but usually the transparent/background pixels
+are mapped to 'off', while the foreground/not transparent pixels are mapped
+to 'on'. Done this way, if the image collides visually with something,
+it collides with that same thing in the collision system.
+
+There is a basic abstraction for factories for binary images,
+which takes a sequence of rows of 'on'/'off' values, ie. boolean values.
+
+\textbf{Mask} is the main abstraction for collision primitives.
+It consists of a origin, an axis-aligned bounding box,
+a nonempty convex hull, and an optional binary image
+(for more information on what a convex hull is, see wikipedia).
+
+As of version 0.1, it has two potential meanings:
+If it has a binary image, it is a pixel-perfect primitive
+using the binary image for the pixel-perfect part and
+using the axis-aligned bounding box and the convex hull
+for bounding volume collision pruning
+(for example, if the bounding boxes of two collision primitives does not
+overlap, the more expensive collision checking is skipped).
+In that case,
+both the axis-aligned bounding box and the convex hull
+should be precise or over-approximating,
+and never under-approximating the binary image.
+
+If instead it does not have a binary image,
+it means that it is a polygon-based primitive
+using the convex hull for the polygon
+and using the axis-aligned bounding box for
+bounding volume collision pruning.
+The bounding box should be precise or over-approximating
+the convex hull, and never under-approximating the
+convex hull.
+
+The origin point indicates for the three other parts
+(the optional binary image, the convex hull,
+and the axis-aligned bounding box).
+So, if a point in the mask has position (1, 2),
+and the origin point is (5, 5), the effective
+position of the point in the mask is (-4, -3).
+Setting the origin point the right place is important.
+It is the point about which rotations happen, and if
+a collision mask is placed at global position (0, 0),
+then the point in the mask that correspons to the
+origin will be found at global position (0, 0).
+For more information regarding coordinates and points,
+see P.
+
+Finally, it should be noted that Mask is meant
+to be precomputed in some ways. Some parts of it,
+such as the convex hull, can take O(n log n) time
+to compute,
+where n is the number of pixels in the binary image.
+
+\textbf{CollisionInfo} represents a collision object
+in a specific state.
+It contains a collision primitive,
+a position, an angle for rotation, a scaling factor
+in the x-axis and the y-axis, and finally the id
+of the collision object.
+
+The order of transformation for finding the final positions
+of the collision primitives pixels is: origin, scaling, rotation, position.
+First the pixels are translated according to the origin,
+then they are scaled along the x-axis and the y-axis.
+Then they are rotated by the angle, and finally
+translated by the position.
+
+For no transformations, the scaling factors should both be
+1.0, and the rotation should be 0.0. The translation
+vector should be (0.0, 0.0).
+
+The angle is measured in radians, the position in pixels,
+and the factors are percentages - so 1.0 is no scaling,
+2.0 is double as big along the axis, and 0.5
+is half as big along the axis.
+
+\textbf{P} represents a simple 2D-point,
+with an x-coordinate and a y-coordinate.
+The x-coordinate goes along the 1. or horizontal
+axis, and the y-coordinate goes along the 2. or
+vertical axis. The units are generally pixels.
+
+In some places of the API, a simple 2D-point
+is viewed instead as a 2D-vector. For that reason,
+P supports several operations for vectors,
+such as cross-product and dot-product.
+
+\textbf{IP} is simply a less feature-full
+integer-version of P.
+
+\textbf{BoundingBox} is an axis-aligned bounding box.
+It consists of two points, of which the minimum
+represents the corner of the axis-aligned box
+that is the closest to origo, and the maximum
+represents the corner of the axis-aligned box
+that is the furthest away from the origo.
+
+BoundingBox supports efficient intersection
+checking. It is used as the most inaccurate
+bounding volume: it generally over-approximates
+a lot, but is very quick, making it useful for
+pruning collision objects that are far away from
+each other quickly.
+
+\textbf{CollisionPair} is a simple representation
+for two collision objects that collide. Since a
+collision object cannot collide with itself,
+the ids for a CollisionPair may never be the same.
+For consistency and comparison, the first id
+must always be strictly smaller than the second id.
+
+\textbf{ConvexCCWPolygon} is the superclass for representing
+convex polygons. Convex polygons are especially suited for
+representing convex hulls. ConvexCCWPolygon has 4 concrete
+subclasses, which are disjoint and which together represents
+all legal ConvexCCWPolygon's: Empty, Point, List, and Polygon.
+
+\textit{Empty} is the convex polygon that represents no points.
+It is mainly included to ensure that all cases are considered
+through the type system.
+
+\textit{Point} is the convex polygon that represents exactly one point.
+
+\textit{Line} is the convex polygon that represents a line segment,
+described by two points, both of which are included in the line segment.
+The points may NOT be the same. For the case where they are the same,
+Point must be used.
+
+\textit{Polygon} is the convex polygon that represents a polygon with
+non-zero area. Thus, it has at least 3 points, none of which are collinear.
+There is a number of important restrictions on Polygon. The first is that
+it has 3 or more points. The second is that none of the points are equal.
+The third is that the polygon they represent is 'simple'
+(see http://en.wikipedia.org/wiki/Simple\_polygon for more information).
+The fourth is that the polygon they represent is convex.
+The fifth is that the polygon is defined counter-clockwise, such that
+if the first three points are named p1, p2 and p3 in that order,
+and v1 is the vector |P1 P2|, and v2 is the vector |P2 P3|,
+then the cross product of v1 and v2 will be strictly positive.
+The sixth is that none of the points are collinear.
+The seventh is that the area of the polygon is non-zero.
+If these restrictions are not obeyed, the library's efficiency,
+accuracy or correctness cannot be guaranteed.
+One simple way to construct a correct convex polygon is simply to
+make a couple of points where the corners of the polygon should be,
+and then use the convex hull algorithm defined in the library
+under the name ConvexHull to get the corresponding correct polygon.
+The ConvexHull algorithm is robust, and will always give a valid result
+no matter the input.
+
+In some cases, a subset of the different polygon cases are needed.
+Examples of this includes the \textit{NonemptyConvexCCWPolygon},
+\textit{EmptyPoint} and \textit{EmptyPointLine}.
+The first includes all concrete types except Empty,
+the second includes only Empty and Point, and the third includes
+Empty, Point and Line.
+

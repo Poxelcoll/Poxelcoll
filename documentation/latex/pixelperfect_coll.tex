@@ -1,0 +1,57 @@
+
+\subsection{Pixel-perfect collision detection}
+
+When two collision primitives based on binary images collide,
+their bounding boxes are checked for collisions, and if there
+is a collision, the intersection of their convex hulls is first found.
+If the intersection is non-empty, the pixel-perfect collision detection
+begins.
+
+The overall method is to find all the pixels touched or contained
+in the intersection, and then check whether for any of these pixels,
+the corresponding pixel in each image is 'on'. If there exist at least
+one such pixel, then there is a collision, else there is not.
+
+In order to find the corresponding pixels, it is important to note
+that in order to go from the coordinate system of an image
+to the coordinate system of the intersection,
+the image must be transformed according to its transformation matrix.
+The transformation matrix handles both origin, scaling, rotation
+and translation. So, in order to go the other way, namely going from
+the coordinate system of the intersection to the coordinate system
+of the image, the inverse transformation must be found.
+This is done by finding the inverse matrix of the transformation
+matrix, which happens to handle the desired inverse transformation.
+So, given a position in the intersection's coordinate system, $p_{intersect}$,
+we take the inverse matrix of image 1, ${M_1}^{-1}$, and calculate ${M_1}^{-1} * p_{intersect}$
+to find the corresponding position in the image's coordinate system, $p_{image1}$.
+Once the corresponding position in the image's coordinate system has been found,
+binary image 1 is queried to see if the pixel is 'on' there.
+The same process is repeated with image 2.
+If both the pixels at positions $p_{image1}$ and $p_{image2}$ in
+respectively image 1 and image 2 is 'on', there is a collision,
+and the pixel-perfect collision detection is done.
+
+This process is somewhat costly, but because only the intersection
+is investigated, not all of both of the images' pixels need to be transformed,
+only the intersection's pixels, and then only if a 'hit' (ie. two 'on'-pixels at the same
+corresponding position) is not found early,
+and finding a 'hit' early is generally more likely for the relatively smaller intersection
+than it is for transforming one image and checking each of its pixels.
+The chance of finding a 'hit' early depends on how accurately the convex hulls
+cover the images. If the convex hulls are accurate, a 'hit' should be found fairly
+quickly, and generally only a small part of the intersection needs to be checked.
+If the convex hulls are not accurate, most or the whole intersection needs to be checked.
+This is the main reason that the convex hulls should be accurate.
+If all convex hulls used are very accurate, the efficiency of the collision detection
+should be on the level of polygon collision detection, despite having pixel-perfect
+precision and ease as well as supporting basic transformations.
+
+As for collision detection between image-based primitives and convex polygon
+primitives, the check for the polygon primitive is simply assumed to be true,
+since all of the intersection is part of the polygon.
+In the case where both primitives are convex polygons, it is only checked
+whether the intersection is empty or not; if it is not empty, there is no collision,
+since if the intersection is empty the polygons does not overlap and thus cannot
+collide.
+

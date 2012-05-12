@@ -1,0 +1,56 @@
+
+\documentclass{article}
+
+\usepackage[utf8x]{inputenc}
+\usepackage{graphicx}
+%\usepackage{wrapfig}
+\usepackage{verbatim}
+%\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref} %NOTE: Must be the last 'usepackage'.
+
+\begin{document}
+
+\title{Poxelcoll version 0.1 manual}
+\date{May 2012}
+\author{Jens W.-Møller}
+\maketitle
+
+\tableofcontents
+
+\listoffigures
+
+\input{intro}
+
+\input{general_topics}
+
+\section{Documentation}
+
+This section contains the general documentation of the library,
+explaining the data types and important features,
+as well as how and why certain parts are implemented the way
+they are. It also describes details related to efficiency,
+as well as the Scala and C++ implementations.
+
+\input{datatypes}
+
+\input{transformations}
+
+\input{polygon_intersection}
+
+\input{pixelperfect_coll}
+
+\input{convex_hull_images}
+
+\input{implementation}
+
+\section{Appendix}
+
+The appendix describes topics of cursory interest such as
+the history of the library.
+
+\input{history}
+
+\end{document}
+

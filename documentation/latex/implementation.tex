@@ -1,0 +1,75 @@
+
+\subsection{Implementation}
+
+The overall focus of the implementation has been correctness,
+safety, robustness and maintainability, as well as asymptotic efficiency.
+This focus should help ensure that the library can be extended
+improved and changed while still having sufficient efficiency
+in most contexts. Constant-factor efficiency has not been prioritized highly.
+If improving the library purely for constant-factor efficiency,
+try to ensure that the correctness and maintainability is at least
+as good as it was before the improvements. Alternatively,
+fork the library and modify it to your needs and taste.
+
+The implementation is generally written without side-effects
+and with referential transparency. While this does not always
+lead to the best constant-factor efficiency,
+it helps a lot in regards to maintainability and correctness,
+and makes the library easier to use and more predictable.
+When modifying the library, try to maintain referential transparency
+as far as is appropriate, and document it clearly when referential
+transparency is not used.
+
+Exceptions to working with referential transparency
+includes tests, performance profiling and demonstrations,
+since referential transparency can be somewhat more bothersome
+to work with. Examples include randomized tests, GUIs, IO, etc.
+
+In regards to style, it should be noted that if a method or function
+that returns a value or object of some sort can fail non-critically,
+it should be denoted as such.
+In Scala, the return type should thus be Option,
+and the method/function name should end in 'O' (as in 'O' for 'Option').
+In C++, the return type should be a (possibly managed) pointer,
+and the method/function name should end in 'Null'.
+
+As of 2012-05-12, there are no tests, no performance profiling,
+and no demonstrations. Improving the library with these parts
+would be desirable, but they should be kept outside the core library,
+such that users that don't use them doesn't need to use them.
+
+\subsubsection{Scala}
+
+The Scala version is written in an idiomatic, object-functional way.
+Modularity is primarily gained through objects,
+and correctness and maintainability is gotten through referential
+transparency and the advanced type system.
+
+The Scala version uses language version 2.9,
+and has no dependencies apart from the core library.
+
+The documentation system is Scaladoc, and SBT is used
+for building.
+
+\subsubsection{C++}
+
+The C++ version is not written in a idiomatic way,
+mainly because it is a somewhat direct port from Scala.
+Scala is generally more expressive than C++ due to its more advanced type system,
+its support for garbage collection, and its (collection) libraries
+that offers efficient immutable, persistent collections.
+Because the C++ version is written in a non-idiomatic way,
+it is considerably slower than it could be.
+Improving the C++ version to be more idiomatic, more efficient
+and still maintainable is highly desirable.
+
+The C++ version is C++11, and uses several features introduced
+in C++11. Apart from depending on the standard library, there
+are dependencies on Boost.
+
+The documentation system is Doxygen, and CMake is used for building.
+There is a implicit dependency on G++, but it should be possible
+to change this dependency without too much work, and the library
+itself should be fully portable to any system supporting Boost
+and C++11.
+

@@ -1,0 +1,119 @@
+
+\subsection{History}
+
+This provides an overview of the development process of the library.
+
+\subsubsection{The beginning and version 0.1}
+
+The library was first motivated by the lack of efficient pixel-perfect collision detection
+support, especially in the FOSS community. Many solutions are naive,
+simply iterating through all the pixels of one image and testing with the other,
+and does not support basic transformations. This is not very flexible or
+efficient. Other are slightly more sophisticated,
+and supports finding the intersection between axis-aligned bounding boxes.
+However, axis-aligned bounding boxes are not a tight fit in a lot of common
+cases, and they become even less tight when rotated. In some cases, the implementations
+are supported only for languages on certain platforms, such as Flash. Examples include
+PMASK (C library) and Collision Detection Kit (ActionScript 3.0 library).
+Especially this link was somewhat depressing,
+\url{http://stackoverflow.com/questions/5138783/c-2d-pixel-perfect-collision-detection-libraries},
+since it clearly seems to implicate that no good pixel-perfect collision detection library exists in C++,
+even though C++ is popular for games and computational geometry,
+and pixel-perfect collision detection is a library/engine-level
+part of games.
+
+The original author of this library decided that the next project
+to work on might as well be pixel-perfect collision detection,
+and once some basic research into the status of the field was done
+(to ensure that no good solution actually existed),
+the prototyping was begun. With a background in computer graphics,
+algorithms, data structures, game development, mathematics,
+linear algebra, image analysis and geometry,
+the author had a skill set suitable for completing this challenge.
+
+The basic idea was found fairly early, namely using the intersection
+of some polygon to narrow the area to check for as closely as possible.
+Since convex hulls are generally very precise or reasonably precise
+for a considerable number of applications, and since a convex hull
+under scaling/rotation is still a convex hull, it was decided to use convex hulls.
+Furthermore, there existed algorithms for finding the intersection
+between convex hulls efficiently (namely in linear time).
+
+The earliest prototype was done using Scala and existing libraries.
+Scala was used because it can be used with all libraries on the
+JVM platform, has high productivity, high safety, high maintainability,
+advanced (collection) libraries,
+and decent performance compared to C++ and Java.
+The library Scalala (Scala Linear Algebra) was used for matrix multiplication,
+and the library JTS (JTS Topology Suite) was used for the convex hull intersection.
+The Scalala Library was easy to use and performed efficiently,
+and was mainly refactored out due to a desire for decreasing dependencies.
+The JTS was somewhat easy to use, but didn't perform the convex hull intersection
+too efficiently. The reason is likely that JTS is a very general library,
+and the convex hull v. convex hull intersection finding was probably supported
+by using a more general, but slower algorithm.
+Implementing the convex hull intersection algorithm did yield considerable increased performance.
+
+The work with supporting the intersection took considerable time.
+However, it was not primarily in the implementation, but in the design phase
+that required a lot of time. While the desired algorithm was based upon
+an existing algorithm design (see \url{http://www.iro.umontreal.ca/~plante/compGeom/algorithm.html}),
+it was an important requirement that the new implementation was geometrically robust.
+And that meant handling ALL possible cases correctly.
+After a fair bit with experimentation on paper, discovery of cases,
+finding general ways to handle issues, etc.,
+a possibly correct design was found. As an example of the challenges
+of ensuring geometric robustness, in one part of the algorithm about 30 different
+cases were identified, which was compressed to about 18 different cases due to
+common traits and common handlings.
+
+After some testing and slight debugging (which proved that the overall design
+and handling of cases was sane - for instance, one bug was due to the incorrect
+identification of a case, and the bugs were fixed by identifying the case correctly),
+the prototype was finally done. The testing including textual testing and visual
+testing, and some basic performance profiling was also done.
+
+After that, it was decided to port the library to C++.
+The reasons include that C++ is close to the metal and
+suitable for game library/engine development,
+C++ is widely supported by many different vendors and OSs and
+C++ is widely used for game library/engine and computational geometry development.
+The author had at the beginning not much experience with C++,
+nor with porting code from Scala to C++.
+Because C++ is a language fraught with dangers and pitfalls,
+and the authors experience in C++ was limited,
+it was decided to take the 'safe' route and implement
+the C++ library in nearly the same way as the Scala library.
+While this did give some headaches and trouble,
+especially in regards to the type system, the type inference,
+the memory handling, the functional programming, templates,
+lack of immutable, persistent collections, weird C++-specific behaviours
+($vector<bool>$, for instance......for the uninformed,
+$vector<bool>$ does not obey the interface for vectors,
+due to some weird premature optimization nonsense.
+Don't use $vector<bool>$. Use $bitset$, $boost::dynamic\_bitset$ or
+$deque<bool>$), it did mean that
+once the port was done, the implementation required very little
+debugging.
+
+Since the porting was non-idiomatic, it meant that the efficiency
+is not nearly as good as it could be, and a simple test
+seemed to suggest that the C++ implementation was about 5 times
+slower than the Scala implementation for specific cases.
+Improving the C++ implementation to become significantly
+constant-factor faster should be possible, and it is likely
+that making the C++ implementation faster than the Scala
+implementation wihtout too much work is likewise possible.
+
+Since the tests was somewhat ad-hoc, it was decided not to
+include them in the library.
+The library was cleaned up, API-documentation was written,
+build systems was used (SBT for Scala, which is very easy,
+and CMake for C++), and documentation generation was used
+(Scaladoc in SBT for Scala, Doxygen for C++).
+These tools generally performed well.
+
+Finally, the manual was written in latex,
+images drawn in InkScape,
+gitted, and uploaded to github.
+

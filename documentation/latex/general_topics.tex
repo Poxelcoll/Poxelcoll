@@ -1,0 +1,89 @@
+
+\section{General topics}
+
+This part introduces general background topics, and how they
+pertain to the library.
+
+\subsection{Collision detection}
+
+Collision detection deals with detecting collisions between
+collision objects. In many cases, collision detection is a
+challenging area, primarily because it is difficult to both
+make solutions flexible, easy to use and efficient.
+Especially efficiency is very often a large issue.
+Since different domains have different requirements in regards
+to flexibility, ease of use and efficiency, different solutions
+are appropriate in different cases. Nonetheless, there are
+some parts of the handling that are general to how the problems
+can be approached.
+
+In many domains, the issue of efficiency stems not only from the
+complexity and accuracy of the individual collision objects,
+but from the possibly large number of different collision objects that may
+collide. Since collision objects frequently model spatial objects,
+and thus rarely overlap or are all placed on top of each other,
+most collision objects are far away from each other.
+In some cases, even checking for all objects which objects they
+are far away from is too inefficient. For instance, checking
+for each of 10.000 objects which of the other objects they are
+far away from requires in the brute-force implementation 100.000.000 comparisons.
+Depending on the specific context, there exists different
+solutions and ways to handle this problem,
+having much fewer comparisons than in the naive implementation.
+This phase of collision detection is commonly called the broad
+phase.
+
+In contrast, the narrow phase of collision detection only deals
+with pairs of objects. For complicated objects that are expensive
+to detect collisions for, there exists methods such as bounding
+volumes to handle it. A bounding volume is one or more over-approximations
+of the actual object that are more efficient to check for than the
+object itself. The advantage is that if there is no collision,
+the checking of the bounding volumes may determine that there is
+no collision, and thus the more expensive collision detection is avoided.
+Variations on this includes bounding volume hierarchies.
+In this library, the over-approximating bounding volumes is primarily
+the axis-aligned bounding box and the convex polygon for the convex hull.
+The axis-aligned bounding box is less precise but faster, while the
+reverse is true for the convex hull.
+
+This library deals exclusively with the narrow phase as of version 0.1.
+If the broad phase of the collision detection is not efficient enough,
+this library can be combined with other libraries or solutions
+that handles it better.
+
+\subsection{Geometric and numerical stability}
+
+Geometric stability and numerical stability are two important properties
+in computational geometry. Since this library contains elements of
+computational geometry, it is important to discuss these properties
+in regards to the library.
+
+Geometric stability is about considering and handling all geometric cases correctly
+in a computational geometry algorithm, no matter what kind of input is given.
+As an example, an algorithm that finds the intersection between two convex polygons
+that finds the correct answer most of the time, for instance when the intersection
+is a polygon itself, but fails in some way (crash, wrong answer, infinite loop, etc.)
+for the cases where the intersection is a line, a point or is empty is not geometrically
+stable. Conversely, an algorithm that always finds the correct answer no matter what the
+intersection is, is geometrically stable.
+All algorithms in the library are designed to be geometrically stable, and seems to
+be geometrically stable in tests.
+
+Geometrical algorithms frequently assumes that calculation with numbers has infinite
+precision. This is not true in general. When an algorithm that would be correct
+if the precision was indeed infinite, but is wrong when it isn't, it is because the
+algorithm is not numerically stable. This is a big problem in computational geometry
+because even small errors can have large consequences. While in other fields finite
+precision for numbers mostly means decreased precision, it can in computational
+geometry lead to errors, wrong answers, crashes, infinite loops, etc.
+An example is testing the cross product of two vectors.
+If a rounding error gives a wrong result (ie. negative result instead of positive),
+a different decision branch of the algorithm may be taken.
+The consequences and effects of numerical stability are fully unknown as of version 0.1,
+and even though they have not caused problems in tests so far, it does not mean
+that they cannot produce undefined behaviour given certain input.
+For this reason, this library should not be used for scientific or mission-critical
+purposes, nor for any purposes where the potential consequences of numerical stability
+are not acceptable. This issue may or may not be improved upon in the future.
+

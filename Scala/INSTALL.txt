@@ -1,0 +1,6 @@
+Build the project with SBT, using "sbt" and then "compile".
+
+Uses Scala 2.9 and SBT 0.11.2
+
+Uses Scaladoc via SBT for documentation.
+
